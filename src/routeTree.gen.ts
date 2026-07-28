@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiProcessDocumentRouteImport } from './routes/api/process-document'
+import { Route as ApiAskCopilotRouteImport } from './routes/api/ask-copilot'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiProcessDocumentRoute = ApiProcessDocumentRouteImport.update({
+  id: '/api/process-document',
+  path: '/api/process-document',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAskCopilotRoute = ApiAskCopilotRouteImport.update({
+  id: '/api/ask-copilot',
+  path: '/api/ask-copilot',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/ask-copilot': typeof ApiAskCopilotRoute
+  '/api/process-document': typeof ApiProcessDocumentRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/ask-copilot': typeof ApiAskCopilotRoute
+  '/api/process-document': typeof ApiProcessDocumentRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/ask-copilot': typeof ApiAskCopilotRoute
+  '/api/process-document': typeof ApiProcessDocumentRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/api/ask-copilot' | '/api/process-document'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/api/ask-copilot' | '/api/process-document'
+  id: '__root__' | '/' | '/api/ask-copilot' | '/api/process-document'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiAskCopilotRoute: typeof ApiAskCopilotRoute
+  ApiProcessDocumentRoute: typeof ApiProcessDocumentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/process-document': {
+      id: '/api/process-document'
+      path: '/api/process-document'
+      fullPath: '/api/process-document'
+      preLoaderRoute: typeof ApiProcessDocumentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ask-copilot': {
+      id: '/api/ask-copilot'
+      path: '/api/ask-copilot'
+      fullPath: '/api/ask-copilot'
+      preLoaderRoute: typeof ApiAskCopilotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiAskCopilotRoute: ApiAskCopilotRoute,
+  ApiProcessDocumentRoute: ApiProcessDocumentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
