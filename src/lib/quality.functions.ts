@@ -2,18 +2,18 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
-async function assertAdmin(
-  supabase: { rpc: (fn: "has_role", args: { _user_id: string; _role: "admin" }) => Promise<{ data: boolean | null }> },
-  userId: string,
-) {
-  const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+async function assertAdmin(context: { supabase: { rpc: Function }; userId: string }) {
+  const { data } = await (context.supabase.rpc as (fn: string, args: Record<string, unknown>) => Promise<{ data: boolean | null }>)(
+    "has_role",
+    { _user_id: context.userId, _role: "admin" },
+  );
   if (!data) throw new Error("Acesso restrito a administradores.");
 }
 
 export const getQualityMetrics = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context);
     const s = context.supabase;
     const [
       readyDocs,
@@ -58,7 +58,7 @@ export const getQualityMetrics = createServerFn({ method: "GET" })
 export const listEvaluationCases = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context);
     const { data, error } = await context.supabase
       .from("evaluation_cases")
       .select("*")
@@ -80,7 +80,7 @@ export const upsertEvaluationCase = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((raw: unknown) => CaseInput.parse(raw))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context);
     if (data.id) {
       const { error } = await context.supabase
         .from("evaluation_cases")
@@ -115,7 +115,7 @@ export const deleteEvaluationCase = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((raw: unknown) => z.object({ id: z.string().uuid() }).parse(raw))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context);
     const { error } = await context.supabase.from("evaluation_cases").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
