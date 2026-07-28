@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, MessageSquare, Shield } from "lucide-react";
+import { LogOut, MessageSquare, Shield, BookOpen, BarChart3 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -56,13 +56,27 @@ function AuthLayout() {
                 Copiloto
               </Link>
             </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/conhecimento">
+                <BookOpen className="mr-2 h-4 w-4" />
+                Conhecimento
+              </Link>
+            </Button>
             {isAdmin && (
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/admin/documentos">
-                  <Shield className="mr-2 h-4 w-4" />
-                  Admin
-                </Link>
-              </Button>
+              <>
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/admin/documentos">
+                    <Shield className="mr-2 h-4 w-4" />
+                    Documentos
+                  </Link>
+                </Button>
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/admin/qualidade">
+                    <BarChart3 className="mr-2 h-4 w-4" />
+                    Qualidade
+                  </Link>
+                </Button>
+              </>
             )}
             <span className="hidden text-xs text-muted-foreground md:inline">{email}</span>
             <Button variant="outline" size="sm" onClick={signOut}>
