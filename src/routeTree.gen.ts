@@ -10,13 +10,19 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiProcessDocumentRouteImport } from './routes/api/process-document'
 import { Route as ApiAskCopilotRouteImport } from './routes/api/ask-copilot'
+import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -34,36 +40,58 @@ const ApiAskCopilotRoute = ApiAskCopilotRouteImport.update({
   path: '/api/ask-copilot',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/chat': typeof AuthenticatedChatRoute
   '/api/ask-copilot': typeof ApiAskCopilotRoute
   '/api/process-document': typeof ApiProcessDocumentRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/chat': typeof AuthenticatedChatRoute
   '/api/ask-copilot': typeof ApiAskCopilotRoute
   '/api/process-document': typeof ApiProcessDocumentRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/api/ask-copilot': typeof ApiAskCopilotRoute
   '/api/process-document': typeof ApiProcessDocumentRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/api/ask-copilot' | '/api/process-document'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/chat'
+    | '/api/ask-copilot'
+    | '/api/process-document'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/api/ask-copilot' | '/api/process-document'
-  id: '__root__' | '/' | '/auth' | '/api/ask-copilot' | '/api/process-document'
+  to: '/' | '/auth' | '/chat' | '/api/ask-copilot' | '/api/process-document'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/chat'
+    | '/api/ask-copilot'
+    | '/api/process-document'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ApiAskCopilotRoute: typeof ApiAskCopilotRoute
   ApiProcessDocumentRoute: typeof ApiProcessDocumentRoute
@@ -76,6 +104,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -99,11 +134,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAskCopilotRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/chat': {
+      id: '/_authenticated/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof AuthenticatedChatRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedChatRoute: typeof AuthenticatedChatRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedChatRoute: AuthenticatedChatRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ApiAskCopilotRoute: ApiAskCopilotRoute,
   ApiProcessDocumentRoute: ApiProcessDocumentRoute,
