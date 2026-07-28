@@ -7,6 +7,7 @@ documentos publicados na base, sempre com citações verificáveis.
 
 > URL publicada: **PREENCHER APÓS PUBLICAÇÃO**
 > Repositório: **PREENCHER APÓS PUBLICAÇÃO**
+> Vídeo-pitch: **PREENCHER APÓS GRAVAÇÃO**
 
 ## Sumário
 
@@ -35,6 +36,11 @@ O Nexo é um copiloto corporativo que:
 5. **Valida cada citação no servidor** — o modelo não pode inventar
    fontes. Sem evidência suficiente, responde `not_found`.
 
+Não-admins só enxergam documentos classificados como `demo`. Conteúdo
+`internal` e `restricted` fica invisível fora do admin, tanto no
+catálogo quanto na busca RAG (imposto por RLS e pela RPC
+`match_document_chunks`).
+
 ## Stack
 
 - Frontend: TanStack Start (React 19), Tailwind v4, shadcn/ui.
@@ -58,10 +64,10 @@ O arquivo `.env` (gerado pela integração Lovable Cloud) contém
 
 ## Como virar admin
 
-O cadastro público está desabilitado por design. Fluxo mínimo:
+O cadastro público está desabilitado por design (config Cloud +
+ausência de UI). Fluxo mínimo:
 
-1. Crie um usuário em `/auth` (email/senha) **ou** via Lovable Cloud →
-   Users.
+1. Crie o usuário via Lovable Cloud → Users (admin do projeto).
 2. Rode o SQL abaixo no Cloud → SQL Editor, substituindo o e-mail:
 
 ```sql
@@ -74,6 +80,9 @@ on conflict do nothing;
 
 3. Faça **logout e login** para que a sessão reflita o novo papel.
 4. O menu **Admin → Documentos** aparecerá no header.
+
+Auth adicional configurada: verificação HIBP (rejeita senhas
+vazadas) e sign-in anônimo desabilitado.
 
 ## Documentos demonstrativos
 
@@ -98,11 +107,14 @@ Não carregue dados reais, pessoais ou confidenciais nesta publicação.
   em **Reprocessar** no admin.
 - **Sem OCR**: PDFs escaneados são marcados como `ocr_required` — o
   sistema **não** inventa texto. OCR está fora do MVP.
-- **Sem SSO/SAML** — apenas email/senha nesta publicação.
+- **Sem SSO/SAML nem recuperação de senha** — apenas login
+  email/senha nesta publicação. Reset é feito pelo admin no Cloud.
 - **Sem streaming SSE** de tokens — respostas voltam em um único
   payload JSON estruturado após a validação de citações.
 - **Sem groundedness automático nem aprovação humana**. Ver
   `docs/GOVERNANCA.md`.
+- **Rate limit por usuário**: 15 perguntas/hora e 40/dia, aplicados
+  atomicamente pela RPC `record_and_check_ask_limit`.
 
 ## Documentação acadêmica
 

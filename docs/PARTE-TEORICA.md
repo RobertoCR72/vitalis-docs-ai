@@ -18,7 +18,7 @@ Trechos de ~1200 caracteres com sobreposição de ~150 (aprox. 800/100 tokens), 
 `google/gemini-embedding-2` (3072 dimensões) via Lovable AI Gateway. Armazenados em `pgvector` com `halfvec(3072)` e índice `HNSW` cosseno.
 
 ### 3.4 Busca híbrida
-A pergunta é vetorizada e combinada a `ts_rank` (dicionário `portuguese`). A RPC `match_document_chunks` filtra apenas documentos `published` + `processing_status = ready` + vigentes. Um limiar mínimo (`minSimilarity = 0.35` OU `text_rank > 0.1`) separa "sem evidência" de "responder".
+A pergunta é vetorizada e combinada a `ts_rank` (dicionário `portuguese`). A RPC `match_document_chunks` filtra apenas documentos `published` + `processing_status = ready` + vigentes, e ainda impõe `classification = 'demo'` para não-admins. Um limiar mínimo (`minSimilarity = 0.35` OU `text_rank > 0.1`) separa "sem evidência" de "responder".
 
 ### 3.5 Geração ancorada
 `openai/gpt-5.5` recebe:
@@ -32,7 +32,7 @@ O servidor **filtra** `cited_chunk_ids` contra os IDs realmente recuperados e mo
 `answered` · `partial` · `not_found` · `conflict`. Cada um é sinalizado ao usuário com badge e nível de confiança.
 
 ## 5. Governança embutida
-RLS por usuário, papéis via tabela dedicada, `SECURITY DEFINER` para checagem de papel, auditoria em `audit_events`, aviso permanente de IA na UI, rate limit por hora/dia.
+RLS por usuário, papéis via tabela dedicada, RPCs `SECURITY DEFINER` (`has_role`, `record_audit`, `record_and_check_ask_limit`), aviso permanente de IA na UI, rate limit atômico por hora/dia, filtro por classificação de documento.
 
 ## 6. Limitações reconhecidas
 OCR, SSO, agentes múltiplos, groundedness automático, aprovação humana. Documentadas em `GOVERNANCA.md` como evolução futura.
