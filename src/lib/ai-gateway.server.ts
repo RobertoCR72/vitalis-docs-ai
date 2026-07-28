@@ -10,23 +10,36 @@ function getKey(): string {
 }
 
 export async function embedText(input: string): Promise<number[]> {
-  const res = await fetch(`${BASE_URL}/embeddings`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Lovable-API-Key": getKey(),
-    },
-    body: JSON.stringify({
-      model: "google/gemini-embedding-2",
-      input,
-    }),
-  });
-  if (!res.ok) {
+  const maxAttempts = 5;
+  let lastErr = "";
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const res = await fetch(`${BASE_URL}/embeddings`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Lovable-API-Key": getKey(),
+      },
+      body: JSON.stringify({ model: "google/gemini-embedding-2", input }),
+    });
+    if (res.ok) {
+      const data = (await res.json()) as { data: { embedding: number[] }[] };
+      return data.data[0].embedding;
+    }
     const body = await res.text();
-    throw new Error(`Embedding falhou (${res.status}): ${body.slice(0, 300)}`);
+    lastErr = `${res.status}: ${body.slice(0, 200)}`;
+    if (res.status === 429 || res.status >= 500) {
+      const retryAfter = Number(res.headers.get("retry-after"));
+      const waitMs = Number.isFinite(retryAfter) && retryAfter > 0
+        ? retryAfter * 1000
+        : Math.min(30_000, 1000 * 2 ** (attempt - 1)) + Math.random() * 500;
+      if (attempt < maxAttempts) {
+        await new Promise((r) => setTimeout(r, waitMs));
+        continue;
+      }
+    }
+    throw new Error(`Embedding falhou (${lastErr})`);
   }
-  const data = (await res.json()) as { data: { embedding: number[] }[] };
-  return data.data[0].embedding;
+  throw new Error(`Embedding falhou após ${maxAttempts} tentativas (${lastErr})`);
 }
 
 export async function chatComplete(params: {
