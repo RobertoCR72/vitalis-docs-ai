@@ -1,0 +1,32 @@
+POL-FIN-002 — POLÍTICA DE REEMBOLSO DE DESPESAS
+Versão: 1.0 | Vigência: a partir de 2026-01-01
+Classificação: CONTEÚDO DEMONSTRATIVO (documento fictício para uso acadêmico no Nexo)
+
+1. OBJETIVO
+Regulamentar o reembolso de despesas realizadas por colaboradores em nome da empresa, garantindo controle, transparência e conformidade fiscal.
+
+2. DESPESAS REEMBOLSÁVEIS
+2.1. Deslocamentos a trabalho (transporte por aplicativo, táxi, combustível quando autorizado).
+2.2. Refeições em viagens corporativas, respeitados os limites do item 4.
+2.3. Materiais de escritório eventuais, com aprovação prévia do gestor.
+2.4. Cursos e certificações, quando previstos no PDI e aprovados pelo RH.
+
+3. DESPESAS NÃO REEMBOLSÁVEIS
+Bebidas alcoólicas, multas de trânsito, entretenimento pessoal, upgrades voluntários de classe em viagens.
+
+4. LIMITES DIÁRIOS DE ALIMENTAÇÃO
+4.1. Almoço: até R$ 80,00.
+4.2. Jantar: até R$ 100,00.
+4.3. Café da manhã: até R$ 40,00 (quando não incluso na hospedagem).
+
+5. PROCESSO
+5.1. O colaborador deve submeter o pedido no sistema financeiro em até 15 dias corridos após a despesa.
+5.2. Todo pedido exige nota fiscal ou cupom fiscal legível anexado.
+5.3. A aprovação ocorre pelo gestor imediato; acima de R$ 2.000,00, também pelo diretor da área.
+5.4. Reembolsos aprovados são pagos junto ao próximo ciclo salarial.
+
+6. EXCEÇÕES
+Casos excepcionais devem ser justificados por escrito e aprovados pela Diretoria Financeira.
+
+7. RESPONSÁVEIS
+Área Financeira — canal financeiro@empresa.demo.
