@@ -10,7 +10,7 @@ function getKey(): string {
 }
 
 export async function embedText(input: string): Promise<number[]> {
-  const maxAttempts = 5;
+  const maxAttempts = 8;
   let lastErr = "";
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const res = await fetch(`${BASE_URL}/embeddings`, {
@@ -31,11 +31,16 @@ export async function embedText(input: string): Promise<number[]> {
       const retryAfter = Number(res.headers.get("retry-after"));
       const waitMs = Number.isFinite(retryAfter) && retryAfter > 0
         ? retryAfter * 1000
-        : Math.min(30_000, 1000 * 2 ** (attempt - 1)) + Math.random() * 500;
+        : Math.min(60_000, 2000 * 2 ** (attempt - 1)) + Math.random() * 1000;
       if (attempt < maxAttempts) {
         await new Promise((r) => setTimeout(r, waitMs));
         continue;
       }
+    }
+    if (res.status === 429) {
+      throw new Error(
+        "Rate limit do Lovable AI Gateway (429). Aguarde alguns minutos e tente reprocessar, ou faça upgrade do plano para limites maiores.",
+      );
     }
     throw new Error(`Embedding falhou (${lastErr})`);
   }
