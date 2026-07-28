@@ -17,7 +17,9 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiProcessDocumentRouteImport } from './routes/api/process-document'
 import { Route as ApiAskCopilotRouteImport } from './routes/api/ask-copilot'
+import { Route as AuthenticatedConhecimentoRouteImport } from './routes/_authenticated/conhecimento'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
+import { Route as AuthenticatedAdminQualidadeRouteImport } from './routes/_authenticated/admin.qualidade'
 import { Route as AuthenticatedAdminDocumentosRouteImport } from './routes/_authenticated/admin.documentos'
 
 const SobreRoute = SobreRouteImport.update({
@@ -59,11 +61,23 @@ const ApiAskCopilotRoute = ApiAskCopilotRouteImport.update({
   path: '/api/ask-copilot',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedConhecimentoRoute =
+  AuthenticatedConhecimentoRouteImport.update({
+    id: '/conhecimento',
+    path: '/conhecimento',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
   id: '/chat',
   path: '/chat',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminQualidadeRoute =
+  AuthenticatedAdminQualidadeRouteImport.update({
+    id: '/admin/qualidade',
+    path: '/admin/qualidade',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminDocumentosRoute =
   AuthenticatedAdminDocumentosRouteImport.update({
     id: '/admin/documentos',
@@ -78,9 +92,11 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/chat': typeof AuthenticatedChatRoute
+  '/conhecimento': typeof AuthenticatedConhecimentoRoute
   '/api/ask-copilot': typeof ApiAskCopilotRoute
   '/api/process-document': typeof ApiProcessDocumentRoute
   '/admin/documentos': typeof AuthenticatedAdminDocumentosRoute
+  '/admin/qualidade': typeof AuthenticatedAdminQualidadeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -89,9 +105,11 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/chat': typeof AuthenticatedChatRoute
+  '/conhecimento': typeof AuthenticatedConhecimentoRoute
   '/api/ask-copilot': typeof ApiAskCopilotRoute
   '/api/process-document': typeof ApiProcessDocumentRoute
   '/admin/documentos': typeof AuthenticatedAdminDocumentosRoute
+  '/admin/qualidade': typeof AuthenticatedAdminQualidadeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -102,9 +120,11 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
+  '/_authenticated/conhecimento': typeof AuthenticatedConhecimentoRoute
   '/api/ask-copilot': typeof ApiAskCopilotRoute
   '/api/process-document': typeof ApiProcessDocumentRoute
   '/_authenticated/admin/documentos': typeof AuthenticatedAdminDocumentosRoute
+  '/_authenticated/admin/qualidade': typeof AuthenticatedAdminQualidadeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -115,9 +135,11 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sobre'
     | '/chat'
+    | '/conhecimento'
     | '/api/ask-copilot'
     | '/api/process-document'
     | '/admin/documentos'
+    | '/admin/qualidade'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -126,9 +148,11 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sobre'
     | '/chat'
+    | '/conhecimento'
     | '/api/ask-copilot'
     | '/api/process-document'
     | '/admin/documentos'
+    | '/admin/qualidade'
   id:
     | '__root__'
     | '/'
@@ -138,9 +162,11 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sobre'
     | '/_authenticated/chat'
+    | '/_authenticated/conhecimento'
     | '/api/ask-copilot'
     | '/api/process-document'
     | '/_authenticated/admin/documentos'
+    | '/_authenticated/admin/qualidade'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -212,11 +238,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAskCopilotRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/conhecimento': {
+      id: '/_authenticated/conhecimento'
+      path: '/conhecimento'
+      fullPath: '/conhecimento'
+      preLoaderRoute: typeof AuthenticatedConhecimentoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/chat': {
       id: '/_authenticated/chat'
       path: '/chat'
       fullPath: '/chat'
       preLoaderRoute: typeof AuthenticatedChatRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/qualidade': {
+      id: '/_authenticated/admin/qualidade'
+      path: '/admin/qualidade'
+      fullPath: '/admin/qualidade'
+      preLoaderRoute: typeof AuthenticatedAdminQualidadeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/documentos': {
@@ -231,12 +271,16 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
+  AuthenticatedConhecimentoRoute: typeof AuthenticatedConhecimentoRoute
   AuthenticatedAdminDocumentosRoute: typeof AuthenticatedAdminDocumentosRoute
+  AuthenticatedAdminQualidadeRoute: typeof AuthenticatedAdminQualidadeRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChatRoute: AuthenticatedChatRoute,
+  AuthenticatedConhecimentoRoute: AuthenticatedConhecimentoRoute,
   AuthenticatedAdminDocumentosRoute: AuthenticatedAdminDocumentosRoute,
+  AuthenticatedAdminQualidadeRoute: AuthenticatedAdminQualidadeRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
