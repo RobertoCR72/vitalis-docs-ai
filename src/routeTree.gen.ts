@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as GovernancaRouteImport } from './routes/governanca'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -17,6 +18,11 @@ import { Route as ApiAskCopilotRouteImport } from './routes/api/ask-copilot'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as AuthenticatedAdminDocumentosRouteImport } from './routes/_authenticated/admin.documentos'
 
+const GovernancaRoute = GovernancaRouteImport.update({
+  id: '/governanca',
+  path: '/governanca',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -56,6 +62,7 @@ const AuthenticatedAdminDocumentosRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/governanca': typeof GovernancaRoute
   '/chat': typeof AuthenticatedChatRoute
   '/api/ask-copilot': typeof ApiAskCopilotRoute
   '/api/process-document': typeof ApiProcessDocumentRoute
@@ -64,6 +71,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/governanca': typeof GovernancaRoute
   '/chat': typeof AuthenticatedChatRoute
   '/api/ask-copilot': typeof ApiAskCopilotRoute
   '/api/process-document': typeof ApiProcessDocumentRoute
@@ -74,6 +82,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/governanca': typeof GovernancaRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/api/ask-copilot': typeof ApiAskCopilotRoute
   '/api/process-document': typeof ApiProcessDocumentRoute
@@ -84,6 +93,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/governanca'
     | '/chat'
     | '/api/ask-copilot'
     | '/api/process-document'
@@ -92,6 +102,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/governanca'
     | '/chat'
     | '/api/ask-copilot'
     | '/api/process-document'
@@ -101,6 +112,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/governanca'
     | '/_authenticated/chat'
     | '/api/ask-copilot'
     | '/api/process-document'
@@ -111,12 +123,20 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  GovernancaRoute: typeof GovernancaRoute
   ApiAskCopilotRoute: typeof ApiAskCopilotRoute
   ApiProcessDocumentRoute: typeof ApiProcessDocumentRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/governanca': {
+      id: '/governanca'
+      path: '/governanca'
+      fullPath: '/governanca'
+      preLoaderRoute: typeof GovernancaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -186,6 +206,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  GovernancaRoute: GovernancaRoute,
   ApiAskCopilotRoute: ApiAskCopilotRoute,
   ApiProcessDocumentRoute: ApiProcessDocumentRoute,
 }
