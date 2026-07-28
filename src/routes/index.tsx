@@ -16,7 +16,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "Respostas fundamentadas em documentos vigentes, com citação, versão e página. Protótipo acadêmico.",
+          "Nexo é um copiloto corporativo acadêmico que responde perguntas sobre políticas e procedimentos com citações verificáveis.",
       },
     ],
   }),

@@ -79,21 +79,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Nexo — Copiloto Corporativo" },
+      { title: "Nexo — Copiloto Corporativo com IA" },
       {
         name: "description",
         content:
-          "Copiloto corporativo com IA para responder perguntas sobre políticas e procedimentos, com citações verificáveis.",
+          "Nexo é um copiloto corporativo acadêmico que responde perguntas sobre políticas e procedimentos com citações verificáveis.",
       },
       { name: "author", content: "Projeto acadêmico Nexo" },
-      { property: "og:title", content: "Nexo — Copiloto Corporativo" },
+      { property: "og:title", content: "Nexo — Copiloto Corporativo com IA" },
       {
         property: "og:description",
         content:
-          "Copiloto corporativo com IA que responde apenas com base nos documentos vigentes e cita as fontes.",
+          "Nexo é um copiloto corporativo acadêmico que responde perguntas sobre políticas e procedimentos com citações verificáveis.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Nexo — Copiloto Corporativo com IA" },
+      { name: "twitter:description", content: "Nexo é um copiloto corporativo acadêmico que responde perguntas sobre políticas e procedimentos com citações verificáveis." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/234ba9b8-196f-4540-a8b8-7b54336a3eff/id-preview-a0190c91--a3378f77-3d5e-4025-906c-34cbf2c9b676.lovable.app-1785203814699.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/234ba9b8-196f-4540-a8b8-7b54336a3eff/id-preview-a0190c91--a3378f77-3d5e-4025-906c-34cbf2c9b676.lovable.app-1785203814699.png" },
     ],
     links: [
       {
