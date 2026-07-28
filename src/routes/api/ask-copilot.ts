@@ -46,26 +46,7 @@ function buildContext(chunks: Array<{ id: string; document_title: string; docume
     .join("\n\n---\n\n");
 }
 
-async function checkRateLimit(supabase: ReturnType<typeof createClient<Database>>, userId: string) {
-  const now = Date.now();
-  const hourAgo = new Date(now - 3600_000).toISOString();
-  const dayAgo = new Date(now - 86400_000).toISOString();
-  const { count: hourCount } = await supabase
-    .from("usage_events")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("kind", "ask")
-    .gte("created_at", hourAgo);
-  if ((hourCount ?? 0) >= NEXO_CONFIG.rateLimit.perHour) return "hourly";
-  const { count: dayCount } = await supabase
-    .from("usage_events")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("kind", "ask")
-    .gte("created_at", dayAgo);
-  if ((dayCount ?? 0) >= NEXO_CONFIG.rateLimit.perDay) return "daily";
-  return null;
-}
+// checkRateLimit foi substituído pela RPC atômica record_and_check_ask_limit.
 
 export const Route = createFileRoute("/api/ask-copilot")({
   server: {
@@ -101,11 +82,16 @@ export const Route = createFileRoute("/api/ask-copilot")({
             .single();
           if (!conv || conv.user_id !== userId) return new Response("Conversa inválida", { status: 403 });
 
-          const limit = await checkRateLimit(userClient, userId);
-          if (limit) {
+          const { data: limitRows, error: limitErr } = await userClient.rpc(
+            "record_and_check_ask_limit",
+            { _per_hour: NEXO_CONFIG.rateLimit.perHour, _per_day: NEXO_CONFIG.rateLimit.perDay },
+          );
+          if (limitErr) throw new Error(limitErr.message);
+          const decision = limitRows?.[0];
+          if (decision && !decision.allowed) {
             return Response.json(
               {
-                error: `Limite ${limit === "hourly" ? "por hora" : "diário"} atingido. Tente novamente mais tarde.`,
+                error: `Limite ${decision.reason === "hourly" ? "por hora" : "diário"} atingido. Tente novamente mais tarde.`,
               },
               { status: 429 },
             );
@@ -123,9 +109,6 @@ export const Route = createFileRoute("/api/ask-copilot")({
             const t = question.slice(0, 60);
             await userClient.from("conversations").update({ title: t }).eq("id", conv.id);
           }
-
-          // Registra uso
-          await userClient.from("usage_events").insert({ user_id: userId, kind: "ask" });
 
           // Embedding + busca
           const embedding = await embedText(question);

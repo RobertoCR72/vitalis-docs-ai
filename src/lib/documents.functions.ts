@@ -111,12 +111,11 @@ export const publishDocument = createServerFn({ method: "POST" })
 
     const { error } = await supabase.from("documents").update({ status: "published" }).eq("id", doc.id);
     if (error) throw new Error(error.message);
-    await supabase.from("audit_events").insert({
-      actor_id: userId,
-      action: "document.publish",
-      resource_type: "document",
-      resource_id: doc.id,
-      metadata: { code: doc.document_code, version: doc.version },
+    await supabase.rpc("record_audit", {
+      _action: "document.publish",
+      _resource_type: "document",
+      _resource_id: doc.id,
+      _metadata: { code: doc.document_code, version: doc.version },
     });
     return { ok: true };
   });
@@ -130,12 +129,11 @@ export const archiveDocument = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Acesso restrito.");
     const { error } = await supabase.from("documents").update({ status: "archived" }).eq("id", data.id);
     if (error) throw new Error(error.message);
-    await supabase.from("audit_events").insert({
-      actor_id: userId,
-      action: "document.archive",
-      resource_type: "document",
-      resource_id: data.id,
-      metadata: {},
+    await supabase.rpc("record_audit", {
+      _action: "document.archive",
+      _resource_type: "document",
+      _resource_id: data.id,
+      _metadata: {},
     });
     return { ok: true };
   });
