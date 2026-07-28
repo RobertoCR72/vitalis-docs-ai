@@ -406,6 +406,22 @@ export type Database = {
           text_rank: number
         }[]
       }
+      record_and_check_ask_limit: {
+        Args: { _per_day: number; _per_hour: number }
+        Returns: {
+          allowed: boolean
+          reason: string
+        }[]
+      }
+      record_audit: {
+        Args: {
+          _action: string
+          _metadata?: Json
+          _resource_id: string
+          _resource_type: string
+        }
+        Returns: undefined
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
     }
