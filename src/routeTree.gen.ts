@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiProcessDocumentRouteImport } from './routes/api/process-document'
 import { Route as ApiAskCopilotRouteImport } from './routes/api/ask-copilot'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,36 +37,47 @@ const ApiAskCopilotRoute = ApiAskCopilotRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/api/ask-copilot': typeof ApiAskCopilotRoute
   '/api/process-document': typeof ApiProcessDocumentRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/api/ask-copilot': typeof ApiAskCopilotRoute
   '/api/process-document': typeof ApiProcessDocumentRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/api/ask-copilot': typeof ApiAskCopilotRoute
   '/api/process-document': typeof ApiProcessDocumentRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/ask-copilot' | '/api/process-document'
+  fullPaths: '/' | '/auth' | '/api/ask-copilot' | '/api/process-document'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/ask-copilot' | '/api/process-document'
-  id: '__root__' | '/' | '/api/ask-copilot' | '/api/process-document'
+  to: '/' | '/auth' | '/api/ask-copilot' | '/api/process-document'
+  id: '__root__' | '/' | '/auth' | '/api/ask-copilot' | '/api/process-document'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
   ApiAskCopilotRoute: typeof ApiAskCopilotRoute
   ApiProcessDocumentRoute: typeof ApiProcessDocumentRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
   ApiAskCopilotRoute: ApiAskCopilotRoute,
   ApiProcessDocumentRoute: ApiProcessDocumentRoute,
 }
