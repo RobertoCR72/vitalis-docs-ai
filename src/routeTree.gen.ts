@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiProcessDocumentRouteImport } from './routes/api/process-document'
 import { Route as ApiAskCopilotRouteImport } from './routes/api/ask-copilot'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
+import { Route as AuthenticatedAdminDocumentosRouteImport } from './routes/_authenticated/admin.documentos'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -45,6 +46,12 @@ const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminDocumentosRoute =
+  AuthenticatedAdminDocumentosRouteImport.update({
+    id: '/admin/documentos',
+    path: '/admin/documentos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -52,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/chat': typeof AuthenticatedChatRoute
   '/api/ask-copilot': typeof ApiAskCopilotRoute
   '/api/process-document': typeof ApiProcessDocumentRoute
+  '/admin/documentos': typeof AuthenticatedAdminDocumentosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -59,6 +67,7 @@ export interface FileRoutesByTo {
   '/chat': typeof AuthenticatedChatRoute
   '/api/ask-copilot': typeof ApiAskCopilotRoute
   '/api/process-document': typeof ApiProcessDocumentRoute
+  '/admin/documentos': typeof AuthenticatedAdminDocumentosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -68,6 +77,7 @@ export interface FileRoutesById {
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/api/ask-copilot': typeof ApiAskCopilotRoute
   '/api/process-document': typeof ApiProcessDocumentRoute
+  '/_authenticated/admin/documentos': typeof AuthenticatedAdminDocumentosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -77,8 +87,15 @@ export interface FileRouteTypes {
     | '/chat'
     | '/api/ask-copilot'
     | '/api/process-document'
+    | '/admin/documentos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/chat' | '/api/ask-copilot' | '/api/process-document'
+  to:
+    | '/'
+    | '/auth'
+    | '/chat'
+    | '/api/ask-copilot'
+    | '/api/process-document'
+    | '/admin/documentos'
   id:
     | '__root__'
     | '/'
@@ -87,6 +104,7 @@ export interface FileRouteTypes {
     | '/_authenticated/chat'
     | '/api/ask-copilot'
     | '/api/process-document'
+    | '/_authenticated/admin/documentos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -141,15 +159,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChatRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/documentos': {
+      id: '/_authenticated/admin/documentos'
+      path: '/admin/documentos'
+      fullPath: '/admin/documentos'
+      preLoaderRoute: typeof AuthenticatedAdminDocumentosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
+  AuthenticatedAdminDocumentosRoute: typeof AuthenticatedAdminDocumentosRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChatRoute: AuthenticatedChatRoute,
+  AuthenticatedAdminDocumentosRoute: AuthenticatedAdminDocumentosRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
