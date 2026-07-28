@@ -40,6 +40,9 @@ Este MVP prioriza **verificação manual guiada** dos comportamentos críticos. 
 - [ ] Chamar `/api/process-document` sem Bearer retorna 401.
 - [ ] Chamar `/api/process-document` como usuário comum retorna 403.
 - [ ] Consulta direta a `documents` via cliente publishable sem sessão retorna vazio (RLS).
+- [ ] Documento marcado `internal` fica invisível para usuário comum em `/conhecimento` e no RAG.
+- [ ] `/auth` não expõe formulário de signup nem link de "criar conta".
+- [ ] Senha listada em bases de vazamento (HIBP) é rejeitada ao criar/alterar via Cloud.
 
 ### 6. SEO
 - [ ] Cada rota tem `<title>` e `<meta description>` únicos.

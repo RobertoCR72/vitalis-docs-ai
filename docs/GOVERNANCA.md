@@ -21,8 +21,10 @@ O *system prompt* instrui o modelo a tratar todo conteúdo de documento como **d
 - Autenticação obrigatória em rotas de dados; papéis `user`/`admin` isolados em tabela dedicada.
 - `has_role()` `SECURITY DEFINER` evita recursão em policies.
 - `LOVABLE_API_KEY` e `SUPABASE_SERVICE_ROLE_KEY` **nunca** vão ao cliente.
-- Rate limit por usuário (15/h, 40/dia) mitiga abuso e custo.
-- Auditoria em `audit_events` para publicação, arquivamento e processamento.
+- Rate limit por usuário (15/h, 40/dia) aplicado atomicamente pela RPC `record_and_check_ask_limit`.
+- Auditoria em `audit_events` **somente** via RPC `record_audit`; escrita direta bloqueada por RLS.
+- Signup público desabilitado, sign-in anônimo desabilitado, verificação HIBP de senhas vazadas habilitada.
+- Documentos `internal`/`restricted` invisíveis a não-admins (RLS + RPC de busca).
 
 ## Limitações declaradas (fora de escopo do MVP)
 - **OCR** de PDFs escaneados.

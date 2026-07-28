@@ -6,7 +6,8 @@ O Nexo foi construído usando a plataforma **Lovable** (agente Claude, editor co
 2. **Planejamento assistido** — o agente propôs uma quebra em 6 fases (fundação, documentos, RAG, páginas, demo/docs, testes) e executou por aprovação.
 3. **Geração de código** — schema, RLS, server functions, componentes React, pipelines de ingestão e RAG foram escritos pelo agente com revisão humana.
 4. **Depuração colaborativa** — erros 500 no processamento (rate limit do plano Free) foram diagnosticados a partir dos logs do preview e mitigados com retry exponencial.
-5. **Auditoria** — ao final, o próprio agente rodou uma auditoria completa contra o prompt inicial, listando parcialidades e ausências (ver `.lovable/plan.md`).
+5. **Auditoria funcional** — ao final, o próprio agente rodou uma auditoria completa contra o prompt inicial, listando parcialidades e ausências (ver `.lovable/plan.md`).
+6. **Auditoria de segurança** — auditoria dedicada identificou falhas críticas/altas (auditoria silenciosa, chunks legíveis por qualquer autenticado, race no rate limit, signup público) que foram corrigidas com RPCs `SECURITY DEFINER` (`record_audit`, `record_and_check_ask_limit`), filtro `classification='demo'` nas policies e desligamento do signup + HIBP.
 
 ## O que foi delegado à IA
 - Boilerplate: rotas TanStack, formulários shadcn, wiring de queries/mutations, Zod schemas.
