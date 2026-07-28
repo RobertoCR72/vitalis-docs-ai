@@ -1,84 +1,103 @@
-# Nexo – Copiloto Corporativo
+# Auditoria Nexo — Copiloto Corporativo
 
-MVP acadêmico full-stack em Lovable (TanStack Start + Lovable Cloud + Lovable AI). Escopo enorme; será entregue em fases sequenciais, priorizando funcionalidade real sobre telas cosméticas. Nada será simulado: se algo não estiver operacional, a UI mostrará estado honesto.
+Escopo: comparar o que está no repositório com os requisitos do prompt inicial e do enunciado acadêmico. **Nenhum código, banco ou config foi alterado.** Todas as evidências vêm de leitura de arquivos e do plano em `.lovable/plan.md`.
 
-## Stack e decisões
-- Frontend: TanStack Start, Tailwind v4, shadcn, pt-BR, tema claro/escuro corporativo (azul-marinho + teal).
-- Backend: Lovable Cloud (Postgres + Auth + Storage + Edge Functions).
-- IA (Lovable AI Gateway, sem priority):
-  - Chat: `openai/gpt-5.5` (padrão) com streaming.
-  - Embeddings: `google/gemini-embedding-2` (3072 dims, pgvector com halfvec).
-- Sem cadastro público; admin promovido manualmente via SQL (documentado).
+Legenda de status: ✅ atendido · 🟡 parcial · ❌ ausente/quebrado.
 
-## Fase 1 – Fundação, Auth e Segurança
-- Habilitar Lovable Cloud.
-- Migração schema: `profiles`, `user_roles` (enum `app_role`), `documents`, `document_chunks` (vector 3072 + tsvector), `conversations`, `messages`, `feedback`, `evaluation_cases`, `audit_events`. Índices HNSW halfvec, GIN, FK, timestamps, checksum único.
-- Função `has_role` SECURITY DEFINER. RLS em todas as tabelas + GRANTs.
-- Trigger de auto-criação de profile no signup.
-- Storage bucket privado `corporate-documents` (admin-only policies).
-- Auth por email/senha; login e reset. Cadastro público desabilitado na UI.
-- Rotas gate: `_authenticated`, `_authenticated/_admin` (via `has_role`).
-- Layout base, header com sessão, footer com aviso de IA.
+## 1. Autenticação, papéis e RLS
 
-## Fase 2 – Gestão e processamento de documentos
-- `/admin/documentos`: upload com metadados obrigatórios (título, código, categoria, versão, vigência, status, departamento, classificação, observações).
-- Validação client + server (extensão, MIME, tamanho ≤10MB, nome, checksum).
-- Edge Function `process-document`:
-  - TXT: decodifica UTF-8.
-  - PDF: `unpdf` (Worker-compatível) preservando páginas/seções.
-  - Heurística: pouco texto → status `ocr_required` (sem inventar).
-  - Chunking semântico (~800 tokens, overlap ~100) com metadados.
-  - Embeddings via gateway.
-  - Idempotente: substitui chunks em transação.
-- Versionamento: novo publish marca anterior como `superseded` com `supersedes_document_id`.
-- Estados visíveis: uploaded, processing, ready, failed, ocr_required. Reprocessar e arquivar (lógico).
+| Requisito | Evidência | Status | Risco | Correção mínima |
+|---|---|---|---|---|
+| Auth email/senha, sem signup público | `src/routes/auth.tsx` + `_authenticated/route.tsx` gate | ✅ | — | — |
+| Papéis `user`/`admin` via tabela separada + `has_role` SECURITY DEFINER | função `has_role` no schema; usada em rotas e server fns | ✅ | — | — |
+| RLS + GRANTs em todas as tabelas públicas | Migração da Fase 1 (plan.md); não reauditado neste turno | 🟡 | Média — não confirmado por scan | Rodar `security--run_security_scan` e revisar tabela por tabela |
+| Reset de senha | Plano menciona; UI de `/auth` não foi lida | 🟡 | Baixa | Confirmar fluxo "esqueci minha senha" em `auth.tsx` |
+| Promoção manual a admin documentada | Apenas mencionada em mensagem de chat; README não contém snippet SQL | ❌ | Alta para reprodução acadêmica | Adicionar seção no README com o SQL de promoção |
 
-## Fase 3 – Chat, RAG e citações
-- Edge Function `ask-copilot` (verifica JWT, papel, rate limit):
-  - Limites em `config/limits.ts`: 15/hora, 40/dia, pergunta ≤1500 chars, top_k=12, final=6.
-  - Busca híbrida (cosine halfvec + tsvector rank) apenas em documentos `published` + vigentes.
-  - Threshold mínimo; abaixo disso responde `not_found` sem chamar LLM.
-  - Prompt de sistema em pt-BR com regras anti-injection, sem conhecimento externo, JSON estruturado (`status`, `answer_markdown`, `cited_chunk_ids`, `confidence`, `follow_up_suggestions`).
-  - Backend valida `chunk_id`s reais e monta citações a partir do banco.
-  - Streaming SSE de tokens; JSON final ao término.
-- `/chat`: sidebar de conversas, área central, painel de fontes clicável.
-  - Rota por thread `/chat/$threadId`, mensagens persistidas no banco por conversa do usuário.
-  - Botões copiar/like/dislike/comentário (grava em `feedback`).
-  - Estados: vazio, carregando, streaming, erro, rate-limit.
-  - Aviso permanente de IA.
+## 2. Upload e processamento de documentos
 
-## Fase 4 – Páginas restantes
-- `/` landing pública (problema, solução, 3 passos, CTA, aviso protótipo).
-- `/login` (login + reset, sem signup).
-- `/conhecimento` catálogo somente-leitura dos publicados; busca e filtros; sem link direto para arquivo.
-- `/admin/qualidade` painel real: contagens (documentos prontos, conversas, respondidas, not_found, conflict, avaliações). Matriz `evaluation_cases` CRUD.
-- `/governanca` conteúdo estático corporativo.
-- `/sobre` problema, arquitetura, IA no desenvolvimento, tecnologias.
+| Requisito | Evidência | Status | Risco | Correção mínima |
+|---|---|---|---|---|
+| Upload PDF/TXT ≤10 MB com metadados obrigatórios | `admin.documentos.tsx` + `documents.functions.ts` (Zod, checksum, signed URL) | ✅ | — | — |
+| Validação client + server (ext, MIME, tamanho, checksum único) | `assertAllowed`, verificação de duplicidade por checksum | ✅ | — | — |
+| Extração real de texto TXT/PDF | `document-processor.server.ts` usa `unpdf`; TXT via `TextDecoder` | ✅ | — | — |
+| Detecção de PDF escaneado → `ocr_required` sem inventar | `isLikelyScanned` marca status; sem OCR | ✅ | — | — |
+| Chunking semântico (~800 tokens, overlap ~100) | Implementado por caracteres (~1200/150), não tokens | 🟡 | Baixa — funcional, mas divergente do plano | Renomear no plano ou converter para tokenização real |
+| Embeddings via gateway idempotentes | Loop sequencial, delete+insert de chunks | ✅ | — | — |
+| Versionamento (`superseded` + `supersedes_document_id`) | `publishDocument` marca anteriores como `superseded`; **não grava `supersedes_document_id`** | 🟡 | Média — rastreabilidade parcial | Preencher `supersedes_document_id` ao publicar nova versão do mesmo `document_code` |
+| Estados visíveis + reprocessar/arquivar | UI de admin cobre tudo (`uploaded/processing/ready/failed/ocr_required`) | ✅ | — | — |
+| Processamento robusto no plano Free (rate limit 429) | `embedText` faz retry 8x/60s; documentos grandes ainda podem falhar após esgotamento | 🟡 | **Alta** — já é a causa dos 500 observados | Documentar limite no README; considerar processar em lotes/pausas e status parcial em vez de `failed` |
 
-## Fase 5 – Dados demo e documentação
-- Ativos em `public/sample-docs/`: POL-RH-001, POL-FIN-002, POL-COM-003 (TXT, marcados “CONTEÚDO DEMONSTRATIVO”). Sem inserir chunks fake — admin faz upload real.
-- `README.md` completo com placeholders `PREENCHER APÓS PUBLICAÇÃO`.
-- `docs/`: PARTE-TEORICA, ARQUITETURA (com diagrama Mermaid), TESTES, IA-NO-DESENVOLVIMENTO, GOVERNANCA, PITCH-4-MINUTOS, EVIDENCIAS, REFERENCIAS.
+## 3. RAG, citações e resposta sem evidência
 
-## Fase 6 – Testes e polimento
-- Testes unit (vitest) para: validação de arquivo, formatação de citação, filtro de chunk_id inexistente, tratamento `not_found`.
-- Verificação manual dos critérios de aceite (documentada em TESTES.md).
-- Rodar `security--run_security_scan` e tratar findings críticos.
-- SEO por rota (`head()` em cada leaf), sitemap.xml e robots.txt.
+| Requisito | Evidência | Status | Risco | Correção mínima |
+|---|---|---|---|---|
+| Busca híbrida (cosine + tsvector) em publicados vigentes | RPC `match_document_chunks` filtra `published`, `ready`, `effective_date <= today` | ✅ | — | — |
+| Threshold mínimo → `not_found` sem chamar LLM | `minSimilarity 0.35` OR `text_rank > 0.1`; se vazio, resposta canned | ✅ | — | — |
+| Prompt anti-injection e "apenas contexto" em pt-BR | `SYSTEM_PROMPT` explícito | ✅ | — | — |
+| Saída JSON estruturada + validação de `chunk_id`s reais | `response_format: json_object`, filtro por `validIds` | ✅ | — | — |
+| Citações montadas do banco, não do LLM | `citations` construído a partir de `scored` | ✅ | — | — |
+| **Streaming SSE de tokens** | `ask-copilot` retorna JSON único; sem SSE | ❌ | Baixa — funcional, mas plano promete streaming | Remover promessa de streaming do plano/README OU implementar SSE |
+| Rate limit por hora/dia | `usage_events` + `checkRateLimit` | ✅ | — | — |
+| Aviso permanente de IA | `NEXO_CONFIG.disclaimer` no chat | ✅ | — | — |
 
-## Detalhes técnicos-chave
-- Server functions autenticadas via `requireSupabaseAuth`; Edge-Functions puras não usadas (TanStack: server routes em `src/routes/api/`).
-- `process-document` e `ask-copilot` como server routes POST autenticadas, admin verificado no handler.
-- pgvector 3072-dim com índice `hnsw ((embedding::halfvec(3072)) halfvec_cosine_ops)`.
-- Rate limit em tabela `usage_events` (ou contagem em `messages` por janela).
-- Audit log via inserts server-side em `audit_events`.
-- Nenhum uso de `service_role` no cliente; `LOVABLE_API_KEY` server-side apenas.
+## 4. Histórico, feedback e páginas restantes
 
-## Ações manuais restantes (serão listadas ao final)
-Criar usuários demo em Cloud > Users, promover primeiro admin via SQL snippet do README, fazer upload dos 3 TXT de exemplo, conectar GitHub Sync, executar testes manuais, capturar prints reais, preencher URL publicada, publicar.
+| Requisito | Evidência | Status | Risco | Correção mínima |
+|---|---|---|---|---|
+| Histórico por usuário (conversas + mensagens) | `conversations.functions.ts` filtra por `user_id`; RLS na tabela | ✅ | — | — |
+| Rota por thread `/chat/$threadId` | Implementado como `/chat?c=<uuid>` (search param), não rota dinâmica | 🟡 | Baixa — funcional; viola diretriz TanStack de rota real por thread | Migrar para `/chat/$threadId.tsx` |
+| Feedback like/dislike/comentário | Botões e `submitFeedback`; **comentário não tem UI** | 🟡 | Baixa | Adicionar campo de comentário no bubble |
+| Copiar resposta | Não implementado | ❌ | Baixa | Botão "copiar" no `MessageBubble` |
+| Página `/conhecimento` (catálogo público de publicados) | **Ausente** — só existe `listPublishedDocuments` server fn | ❌ | Média — item do plano Fase 4 | Criar rota `_authenticated/conhecimento.tsx` |
+| Página `/admin/qualidade` (métricas + `evaluation_cases` CRUD) | **Ausente** | ❌ | Média — item do plano Fase 4 | Criar rota admin de qualidade |
+| Landing `/`, `/sobre`, `/governanca` | Presentes e coerentes | ✅ | — | — |
 
-## Não incluso (limites reconhecidos)
-OCR, SSO, conectores externos, MCP, agentes múltiplos, groundedness automático, aprovação humana. Documentado como evolução futura.
+## 5. Dados demo e documentação acadêmica
 
----
-Confirma que posso executar nessa ordem? Responda **aprovar** para começar pela Fase 1, ou indique ajustes (ex.: pular alguma fase, mudar prioridade, adicionar/remover algo).
+| Requisito | Evidência | Status | Risco | Correção mínima |
+|---|---|---|---|---|
+| `public/sample-docs/` com 3 políticas TXT demonstrativas | Pasta **não existe** (`public/` só tem `favicon.ico`, `robots.txt`) | ❌ | Alta — demo não reproduzível | Adicionar os 3 TXT prometidos |
+| README completo (visão, stack, setup, admin SQL, limites, "PREENCHER APÓS PUBLICAÇÃO") | README ainda é o template padrão da Lovable | ❌ | **Alta** — bloqueia entrega acadêmica | Reescrever README conforme plano |
+| Pasta `docs/` (PARTE-TEORICA, ARQUITETURA c/ Mermaid, TESTES, IA-NO-DESENVOLVIMENTO, GOVERNANCA, PITCH, EVIDENCIAS, REFERENCIAS) | Pasta **não existe** | ❌ | **Alta** — entregável acadêmico principal | Criar `docs/` com os 8 arquivos previstos |
+| `sitemap.xml` e `robots.txt` | `sitemap[.]xml.ts` presente; `robots.txt` presente | ✅ | — | — |
+| SEO por rota (`head()` único em cada leaf) | Landing, sobre, governança, chat, admin, auth com `head()` — não reconferido em auth | ✅ | Baixa | Confirmar `head()` em `auth.tsx` |
+
+## 6. Testes e segurança
+
+| Requisito | Evidência | Status | Risco | Correção mínima |
+|---|---|---|---|---|
+| Testes unit (vitest) para validação, citação, filtro, `not_found` | **Nenhum arquivo de teste no repo** | ❌ | Média | Adicionar `*.test.ts` mínimos |
+| `TESTES.md` com critérios de aceite manuais | Não existe | ❌ | Média | Criar dentro de `docs/` |
+| `security--run_security_scan` executado e findings tratados | Não há evidência de execução | ❌ | Média | Rodar scan antes de publicar |
+| Sem uso de `service_role` no cliente | `client.server.ts` só importado dinamicamente em handlers | ✅ | — | — |
+| `LOVABLE_API_KEY` só no servidor | Lido via `process.env` em `ai-gateway.server.ts` | ✅ | — | — |
+| Verificação de admin em endpoints privilegiados | `process-document` e `ask-copilot` checam token+claims+`has_role` (o segundo não exige admin, só auth — correto) | ✅ | — | — |
+
+## 7. Plano Free e itens que NÃO devem ser alegados como implementados
+
+| Item | Situação | Correção |
+|---|---|---|
+| **Streaming SSE** | Prometido no plan.md, **não** implementado | Remover da narrativa até implementar |
+| **Rota por thread `/chat/$threadId`** | Prometido, feito via `?c=` | Ajustar plan.md ou migrar |
+| **Documentos demo em `public/sample-docs/`** | Prometidos, ausentes | Não citar como pronto até serem adicionados |
+| **`docs/` acadêmico e README completo** | Prometidos, ausentes | Não citar como pronto |
+| **Página `/conhecimento`** | Prometida (Fase 4), ausente | Não alegar catálogo público |
+| **Página `/admin/qualidade`** | Prometida (Fase 4), ausente | Não alegar painel de qualidade |
+| **Testes unit** | Prometidos (Fase 6), ausentes | Não alegar cobertura |
+| **Processamento resistente ao Free** | Retry existe, mas documentos maiores estouram; erro 500 recente confirma | Não vender como "robusto"; documentar limitação e reprocessamento manual |
+| **`supersedes_document_id`** | Coluna existe no plano; **não é populada** | Não alegar versionamento auditável completo |
+| **Rate limit "40/dia, 15/h"** | Implementado; ok | — |
+| **OCR/SSO/agentes/aprovação humana** | Corretamente listados como fora de escopo | Manter em "Limitações" |
+
+## 8. Bloqueadores para "publicável" (ordem de correção mínima recomendada)
+
+1. Reescrever `README.md` (setup + SQL de promoção admin + limitações do Free + URLs a preencher).
+2. Criar `docs/` com os 8 arquivos acadêmicos previstos (mínimo: ARQUITETURA, TESTES, GOVERNANCA, PARTE-TEORICA).
+3. Adicionar `public/sample-docs/POL-RH-001.txt`, `POL-FIN-002.txt`, `POL-COM-003.txt` marcados como demonstrativos.
+4. Implementar páginas `/conhecimento` e `/admin/qualidade` **ou** removê-las do escopo declarado.
+5. Rodar `security--run_security_scan` e resolver findings críticos.
+6. Alinhar plan.md com a realidade: remover streaming SSE e rota `/chat/$threadId` até implementados.
+7. (Opcional para MVP) Testes vitest mínimos para validação de upload, `not_found` e filtro de citação.
+
+Confirme se posso sair do Plan Mode para executar os bloqueadores 1–3 (documentação e demo) primeiro, e depois 4–7. Ou indique outra prioridade.
