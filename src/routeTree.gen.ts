@@ -15,6 +15,7 @@ import { Route as GovernancaRouteImport } from './routes/governanca'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRedefinirRouteImport } from './routes/auth_.redefinir'
 import { Route as ApiProcessDocumentRouteImport } from './routes/api/process-document'
 import { Route as ApiAskCopilotRouteImport } from './routes/api/ask-copilot'
 import { Route as AuthenticatedConhecimentoRouteImport } from './routes/_authenticated/conhecimento'
@@ -49,6 +50,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRedefinirRoute = AuthRedefinirRouteImport.update({
+  id: '/auth_/redefinir',
+  path: '/auth/redefinir',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiProcessDocumentRoute = ApiProcessDocumentRouteImport.update({
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/conhecimento': typeof AuthenticatedConhecimentoRoute
   '/api/ask-copilot': typeof ApiAskCopilotRoute
   '/api/process-document': typeof ApiProcessDocumentRoute
+  '/auth/redefinir': typeof AuthRedefinirRoute
   '/admin/documentos': typeof AuthenticatedAdminDocumentosRoute
   '/admin/qualidade': typeof AuthenticatedAdminQualidadeRoute
 }
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/conhecimento': typeof AuthenticatedConhecimentoRoute
   '/api/ask-copilot': typeof ApiAskCopilotRoute
   '/api/process-document': typeof ApiProcessDocumentRoute
+  '/auth/redefinir': typeof AuthRedefinirRoute
   '/admin/documentos': typeof AuthenticatedAdminDocumentosRoute
   '/admin/qualidade': typeof AuthenticatedAdminQualidadeRoute
 }
@@ -123,6 +131,7 @@ export interface FileRoutesById {
   '/_authenticated/conhecimento': typeof AuthenticatedConhecimentoRoute
   '/api/ask-copilot': typeof ApiAskCopilotRoute
   '/api/process-document': typeof ApiProcessDocumentRoute
+  '/auth_/redefinir': typeof AuthRedefinirRoute
   '/_authenticated/admin/documentos': typeof AuthenticatedAdminDocumentosRoute
   '/_authenticated/admin/qualidade': typeof AuthenticatedAdminQualidadeRoute
 }
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/conhecimento'
     | '/api/ask-copilot'
     | '/api/process-document'
+    | '/auth/redefinir'
     | '/admin/documentos'
     | '/admin/qualidade'
   fileRoutesByTo: FileRoutesByTo
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
     | '/conhecimento'
     | '/api/ask-copilot'
     | '/api/process-document'
+    | '/auth/redefinir'
     | '/admin/documentos'
     | '/admin/qualidade'
   id:
@@ -165,6 +176,7 @@ export interface FileRouteTypes {
     | '/_authenticated/conhecimento'
     | '/api/ask-copilot'
     | '/api/process-document'
+    | '/auth_/redefinir'
     | '/_authenticated/admin/documentos'
     | '/_authenticated/admin/qualidade'
   fileRoutesById: FileRoutesById
@@ -178,6 +190,7 @@ export interface RootRouteChildren {
   SobreRoute: typeof SobreRoute
   ApiAskCopilotRoute: typeof ApiAskCopilotRoute
   ApiProcessDocumentRoute: typeof ApiProcessDocumentRoute
+  AuthRedefinirRoute: typeof AuthRedefinirRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -222,6 +235,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth_/redefinir': {
+      id: '/auth_/redefinir'
+      path: '/auth/redefinir'
+      fullPath: '/auth/redefinir'
+      preLoaderRoute: typeof AuthRedefinirRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/process-document': {
@@ -295,6 +315,7 @@ const rootRouteChildren: RootRouteChildren = {
   SobreRoute: SobreRoute,
   ApiAskCopilotRoute: ApiAskCopilotRoute,
   ApiProcessDocumentRoute: ApiProcessDocumentRoute,
+  AuthRedefinirRoute: AuthRedefinirRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
